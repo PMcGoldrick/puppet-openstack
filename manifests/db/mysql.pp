@@ -52,6 +52,7 @@ class openstack::db::mysql (
     # MySQL
     $mysql_bind_address     = '0.0.0.0',
     $mysql_account_security = true,
+    $mysql_addn_confs       = undef,
     # Keystone
     $keystone_db_user       = 'keystone',
     $keystone_db_dbname     = 'keystone',
@@ -75,10 +76,16 @@ class openstack::db::mysql (
 
   # Install and configure MySQL Server
   class { 'mysql::server':
-    config_hash => {
+    default_config_hash => {
       'root_password' => $mysql_root_password,
       'bind_address'  => $mysql_bind_address,
     },
+    if $mysql_addn_confs {
+      include 'stdlib'
+      config_hash = merge($mysql_addn_confs, $default_config_hash)
+    } else {
+      config_has = $default_config_hash
+    }
     enabled     => $enabled,
   }
 
