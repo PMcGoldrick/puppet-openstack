@@ -75,17 +75,18 @@ class openstack::db::mysql (
 ) {
 
   # Install and configure MySQL Server
+  if $mysql_addn_confs {
+    include 'stdlib'
+    $config_hash = merge($mysql_addn_confs, 
+			 {'root_password' => $mysql_root_password, 
+                          'bind_address' => $mysql_bind_address })
+  } else {
+    $config_hash = {'root_password' => $mysql_root_password, 
+		    'bind_address' => $mysql_bind_address }
+  }
+
   class { 'mysql::server':
-    default_config_hash => {
-      'root_password' => $mysql_root_password,
-      'bind_address'  => $mysql_bind_address,
-    },
-    if $mysql_addn_confs {
-      include 'stdlib'
-      config_hash = merge($mysql_addn_confs, $default_config_hash)
-    } else {
-      config_has = $default_config_hash
-    }
+    config_hash => $config_hash,
     enabled     => $enabled,
   }
 
